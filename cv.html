@@ -1,0 +1,636 @@
+<!--
+Interactive Fitness CV
+Single-file HTML/CSS/JS - super-gila, animated, interactive, and ready for GitHub Pages.
+Dummy data & images included (Unsplash). Replace with your real info + photo.
+Libraries used via CDN: GSAP, Typed.js, html2pdf, Howler (audio), Particles.js (simple), and simple vanilla JS.
+Instructions: open this file in browser, or push to GitHub repo and enable Pages (index.html at root).
+-->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Wibisono Imran — Interactive CV</title>
+    <meta name="description" content="Interactive, animated CV for fitness professionals — demo (dummy content)." />
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <!-- ICONS -->
+    <script src="https://kit.fontawesome.com/a2d9b1f6d2.js" crossorigin="anonymous"></script>
+
+    <!-- STYLES -->
+    <style>
+        :root {
+            --bg: #0f1724;
+            --card: #0b1220;
+            --accent: #ff6b6b;
+            --muted: #98a1b2;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-2: rgba(255, 255, 255, 0.02);
+            color-scheme: dark;
+            font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(180deg, #081026 0%, #07101a 60%);
+        }
+
+        /* Page layout */
+        .wrap {
+            max-width: 1100px;
+            margin: 36px auto;
+            padding: 28px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 22px
+        }
+
+        .left {
+            position: relative;
+            border-radius: 18px;
+            padding: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            box-shadow: 0 8px 30px rgba(2, 6, 23, 0.7);
+            overflow: hidden
+        }
+
+        .right {
+            padding: 28px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+            box-shadow: 0 12px 40px rgba(2, 6, 23, 0.6);
+        }
+
+        /* header */
+        .photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 4px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .name {
+            font-size: 20px;
+            font-weight: 800;
+            margin-top: 12px
+        }
+
+        .title {
+            font-weight: 600;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* stats */
+        .stats {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px
+        }
+
+        .stat {
+            background: var(--glass);
+            padding: 12px;
+            border-radius: 10px;
+            flex: 1;
+            text-align: center
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 18px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        /* buttons */
+        .btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px
+        }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent), #ff8a6b);
+            color: white;
+            font-weight: 600
+        }
+
+        /* skills */
+        .skills {
+            margin-top: 20px
+        }
+
+        .skill {
+            margin-bottom: 14px
+        }
+
+        .skill .label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .bar {
+            height: 10px;
+            background: var(--glass-2);
+            border-radius: 999px;
+            margin-top: 6px;
+            overflow: hidden
+        }
+
+        .bar>i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--accent), #ffd36b);
+            border-radius: 999px
+        }
+
+        /* timeline */
+        .timeline {
+            margin-top: 20px
+        }
+
+        .tl-item {
+            padding: 12px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+            margin-bottom: 10px
+        }
+
+        .tl-year {
+            font-weight: 700
+        }
+
+        /* hero / right */
+        .hero {
+            display: flex;
+            gap: 22px;
+            align-items: flex-start
+        }
+
+        .hero-left {
+            flex: 1
+        }
+
+        .headline {
+            font-size: 28px;
+            font-weight: 800
+        }
+
+        .typed {
+            color: var(--accent);
+            font-weight: 700
+        }
+
+        .overview {
+            color: var(--muted);
+            margin-top: 10px
+        }
+
+        /* cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 18px
+        }
+
+        .card {
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+        }
+
+        /* timeline / projects */
+        .project {
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+            margin-bottom: 12px
+        }
+
+        .project h4 {
+            margin: 0
+        }
+
+        /* fancy 3D-ish panel */
+        #scene {
+            width: 320px;
+            height: 320px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            overflow: hidden
+        }
+
+        /* footer actions */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            align-items: center
+        }
+
+        /* responsive */
+        @media(max-width:980px) {
+            .wrap {
+                grid-template-columns: 1fr;
+                padding: 18px
+            }
+
+            .hero {
+                flex-direction: column
+            }
+
+            .cards {
+                grid-template-columns: 1fr
+            }
+        }
+
+        /* print-friendly */
+        @media print {
+            body {
+                background: white;
+                color: black
+            }
+
+            .left,
+            .right {
+                box-shadow: none;
+                background: transparent
+            }
+
+            .btns,
+            .actions {
+                display: none
+            }
+        }
+
+        /* micro interactions */
+        .float {
+            position: absolute;
+            opacity: 0.06;
+            filter: blur(14px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <div class="left" id="left">
+            <!-- decorative floating circles -->
+            <svg class="float" style="right:-80px; top:-40px; width:260px; height:260px; transform:rotate(40deg)">
+                <defs>
+                    <linearGradient id="g1">
+                        <stop stop-color="#ff6b6b" offset="0" />
+                        <stop stop-color="#ffd36b" offset="1" />
+                    </linearGradient>
+                </defs>
+                <circle cx="130" cy="130" r="120" fill="url(#g1)" />
+            </svg>
+
+            <div style="display:flex; gap:16px; align-items:center">
+                <div class="photo" id="photo">
+                    <img src="https://images.unsplash.com/photo-1546484959-fb3aa2d6a2b2?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                        alt="photo" style="width:100%; height:100%; object-fit:cover">
+                </div>
+                <div>
+                    <div class="name">Wibisono Imran</div>
+                    <div class="title">Fitness Coach & Personal Trainer</div>
+                    <div class="muted">Jakarta, Indonesia • <span id="age">28 yrs</span></div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat"><strong id="clients">120</strong><span class="muted">Clients</span></div>
+                <div class="stat"><strong id="years">6</strong><span class="muted">Years Exp</span></div>
+                <div class="stat"><strong id="certs">5</strong><span class="muted">Certs</span></div>
+            </div>
+
+            <div class="btns">
+                <div class="btn primary" id="hireBtn"><i class="fa-solid fa-paper-plane"></i> Hire Me</div>
+                <div class="btn" id="downloadBtn"><i class="fa-solid fa-file-arrow-down"></i> Download PDF</div>
+            </div>
+
+            <div class="skills">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <strong>Skills</strong><span class="muted">Level</span></div>
+
+                <div class="skill" data-skill="Strength Training">
+                    <div class="label">Strength Training <span class="muted">95%</span></div>
+                    <div class="bar"><i style="width:95%"></i></div>
+                </div>
+                <div class="skill" data-skill="HIIT">
+                    <div class="label">HIIT <span class="muted">89%</span></div>
+                    <div class="bar"><i style="width:89%"></i></div>
+                </div>
+                <div class="skill" data-skill="Nutrition">
+                    <div class="label">Nutrition Coaching <span class="muted">82%</span></div>
+                    <div class="bar"><i style="width:82%"></i></div>
+                </div>
+                <div class="skill" data-skill="Mobility">
+                    <div class="label">Mobility & Recovery <span class="muted">78%</span></div>
+                    <div class="bar"><i style="width:78%"></i></div>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <strong>Experience</strong><button class="btn" id="expToggle">Compact</button></div>
+                <div class="tl-item">
+                    <div class="tl-year">2022 — Present</div>
+                    <div class="muted">Head Personal Trainer @ IronCore Gym</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">2019 — 2022</div>
+                    <div class="muted">Trainer @ FitLab Studio</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">2016 — 2019</div>
+                    <div class="muted">Assistant Coach @ Community Center</div>
+                </div>
+            </div>
+
+            <div class="muted" style="margin-top:18px; font-size:13px">Contact</div>
+            <div style="display:flex; gap:8px; margin-top:8px">
+                <div class="btn">📧 hi@demo.com</div>
+                <div class="btn">📞 +62 812-3456-789</div>
+            </div>
+
+        </div>
+
+        <div class="right">
+            <div class="hero">
+                <div class="hero-left">
+                    <div class="headline">I'm <span class="typed" id="typed"></span></div>
+                    <div class="overview">Energetic fitness coach blending science-backed training with motivating
+                        delivery. I build programs that produce lasting results — weight loss, strength, and mobility.
+                    </div>
+
+                    <div class="cards">
+                        <div class="card">
+                            <strong>Featured Program</strong>
+                            <p class="muted">12-week Hypertrophy & Conditioning</p>
+                            <div style="display:flex; gap:8px; margin-top:10px">
+                                <div class="btn">View</div>
+                                <div class="btn">Enroll</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <strong>Certifications</strong>
+                            <p class="muted">NASM CPT • Precision Nutrition • CPR</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:18px">
+                        <strong>Top Projects</strong>
+                        <div class="project">
+                            <h4>Group Coaching App</h4>
+                            <div class="muted">Built a program and templated workouts for 200+ group members that
+                                increased retention by 37%.</div>
+                        </div>
+                        <div class="project">
+                            <h4>Corporate Wellness</h4>
+                            <div class="muted">Delivered on-site workshops and remote programs for teams up to 70
+                                people.</div>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <div class="btn" id="playSound"><i class="fa-solid fa-music"></i> Play Intro</div>
+                        <div class="btn" id="themeToggle"><i class="fa-solid fa-circle-half-stroke"></i> Toggle Accent
+                        </div>
+                        <div class="btn" id="contactCard"><i class="fa-solid fa-id-badge"></i> Share vCard</div>
+                    </div>
+
+                </div>
+
+                <div id="scene" aria-hidden="true">
+                    <!-- canvas / visualizer injection by JS -->
+                </div>
+
+            </div>
+
+            <hr style="opacity:0.06; margin:20px 0">
+
+            <div style="display:flex; gap:12px; align-items:center; justify-content:space-between">
+                <strong>Interactive Resume — Stats & Live Tools</strong>
+                <div class="muted">Hosted ready for GitHub Pages</div>
+            </div>
+
+            <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <div class="card">
+                    <strong>Body Mass Index</strong>
+                    <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
+                        <input id="height" placeholder="height cm"
+                            style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                        <input id="weight" placeholder="weight kg"
+                            style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+                        <div class="btn" id="bmiCalc">Calc</div>
+                    </div>
+                    <div id="bmiResult" class="muted" style="margin-top:8px"></div>
+                </div>
+
+                <div class="card">
+                    <strong>Program Price Estimator</strong>
+                    <p class="muted" style="margin-top:8px">Choose duration</p>
+                    <input type="range" id="priceRange" min="4" max="24" value="12">
+                    <div style="display:flex; justify-content:space-between">
+                        <div class="muted">4 wk</div>
+                        <div class="muted">24 wk</div>
+                    </div>
+                    <div style="margin-top:8px"><strong id="priceValue">Rp 2.500.000</strong></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+
+    <script>
+        // ===== Animated typed headline =====
+        const typed = new Typed('#typed', {
+            strings: ['A Fitness Coach', 'A Strength Specialist', 'A Mobility Nerd', 'Your Next Trainer'],
+            typeSpeed: 60,
+            backSpeed: 30,
+            backDelay: 1400,
+            loop: true
+        });
+
+        // ===== Crazy GSAP entrance =====
+        gsap.from('.left', { duration: 1.1, x: -40, opacity: 0, ease: 'power3.out' });
+        gsap.from('.right', { duration: 1.2, x: 40, opacity: 0, delay: 0.12, ease: 'power3.out' });
+        gsap.from('.photo img', { duration: 1.1, scale: 0.8, rotation: -6, ease: 'elastic.out(1,0.8)', delay: 0.3 });
+
+        // ===== Scene: particle canvas + rotating 'dumbbell' using canvas =====
+        (function createScene() {
+            const scene = document.getElementById('scene');
+            const canvas = document.createElement('canvas');
+            canvas.width = 320; canvas.height = 320; canvas.style.display = 'block';
+            scene.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+
+            let angle = 0; let last = 0;
+            const center = { x: 160, y: 160 };
+
+            function drawDumbbell(a) {
+                ctx.clearRect(0, 0, 320, 320);
+                // soft glow
+                ctx.save(); ctx.translate(center.x, center.y); ctx.rotate(a);
+                // shaft
+                ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(-6, -40, 12, 80);
+                // plates
+                for (let s of [-1, 1]) {
+                    let x = s * 38;
+                    ctx.beginPath(); ctx.fillStyle = 'rgba(255,107,107,0.12)'; ctx.ellipse(x, 0, 36, 36, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.fillStyle = 'rgba(255,215,107,0.08)'; ctx.arc(x, 0, 20, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+
+                // floating particles
+                for (let i = 0; i < 16; i++) {
+                    const t = (Date.now() / 1000 + i * 0.7) % 6;
+                    const r = 60 + 40 * Math.sin(t * 1.5 + i);
+                    const x = center.x + r * Math.cos(t + i);
+                    const y = center.y + r * Math.sin(t * 1.2 + i * 0.5);
+                    ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.arc(x, y, 6 * Math.abs(Math.sin(t)) + 1, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+
+            function loop(ts) {
+                angle += 0.006 * (ts - last || 16);
+                drawDumbbell(angle);
+                last = ts;
+                requestAnimationFrame(loop);
+            }
+            requestAnimationFrame(loop);
+
+            // tiny interaction: mouse tilt modifies rotation
+            scene.addEventListener('mousemove', (e) => {
+                const r = scene.getBoundingClientRect();
+                const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+                const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+                gsap.to(canvas, { duration: 1, rotation: dx * 8 });
+            });
+        })();
+
+        // ===== Buttons interactivity =====
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const opt = { margin: 0.5, filename: 'Wibisono-Imran-CV.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 1.6 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            html2pdf().from(document.body).set(opt).save();
+        });
+
+        document.getElementById('hireBtn').addEventListener('click', () => {
+            // playful confetti + pulse
+            const el = document.getElementById('hireBtn');
+            gsap.fromTo(el, { scale: 1 }, { scale: 1.06, duration: 0.12, yoyo: true, repeat: 3, ease: 'power1.inOut' });
+            alert('Thanks! This is a demo. Replace the contact info with yours before sharing.');
+        });
+
+        // BMI Calculator
+        document.getElementById('bmiCalc').addEventListener('click', () => {
+            const h = parseFloat(document.getElementById('height').value);
+            const w = parseFloat(document.getElementById('weight').value);
+            if (!h || !w) { document.getElementById('bmiResult').innerText = 'Fill height & weight'; return; }
+            const m = w / ((h / 100) * (h / 100));
+            let cat = 'Normal'; if (m < 18.5) cat = 'Underweight'; else if (m >= 25) cat = 'Overweight';
+            document.getElementById('bmiResult').innerText = `BMI ${m.toFixed(1)} — ${cat}`;
+        });
+
+        // Price Estimator
+        const priceRange = document.getElementById('priceRange');
+        const priceValue = document.getElementById('priceValue');
+        function updatePrice() {
+            const weeks = parseInt(priceRange.value);
+            const base = 200000; // per week
+            const price = base * weeks; // simple
+            priceValue.innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(price);
+        }
+        priceRange.addEventListener('input', updatePrice); updatePrice();
+
+        // theme accent toggle
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const root = document.documentElement;
+            if (getComputedStyle(root).getPropertyValue('--accent') === '#ff6b6b') {
+                root.style.setProperty('--accent', '#6b8bff');
+            } else { root.style.setProperty('--accent', '#ff6b6b'); }
+            gsap.fromTo(':root', { opacity: 0.98 }, { opacity: 1, duration: 0.6 });
+        });
+
+        // play a tiny sound intro using Howler
+        const sound = new Howl({ src: ['https://actions.google.com/sounds/v1/alarms/beep_short.ogg'], volume: 0.25 });
+        document.getElementById('playSound').addEventListener('click', () => sound.play());
+
+        // Share vCard (simple) -> copy to clipboard
+        document.getElementById('contactCard').addEventListener('click', async () => {
+            const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:Wibisono Imran\nEMAIL:hi@demo.com\nTEL:+628123456789\nEND:VCARD`;
+            await navigator.clipboard.writeText(vcard);
+            alert('vCard copied to clipboard — paste into email or save as .vcf');
+        });
+
+        // Exp toggle
+        document.getElementById('expToggle').addEventListener('click', () => {
+            const btn = document.getElementById('expToggle');
+            const hidden = btn.dataset.compact === '1';
+            document.querySelectorAll('.tl-item').forEach((el, i) => el.style.display = hidden ? 'block' : (i > 1 ? 'none' : 'block'));
+            btn.dataset.compact = hidden ? '0' : '1'; btn.innerText = hidden ? 'Compact' : 'Expand';
+        });
+
+        // Cheese: animate skill bars with spring physics when in viewport
+        const skills = document.querySelectorAll('.skill i');
+        function animateSkills() {
+            skills.forEach((el, idx) => {
+                const w = el.style.width || '60%';
+                gsap.fromTo(el, { width: 0 }, { width: w, duration: 1.6, ease: 'elastic.out(1,0.6)', delay: idx * 0.12 });
+            });
+        }
+        window.addEventListener('load', animateSkills);
+
+        // small dynamic counters for stats
+        function animateCounter(id, end, duration = 1200) {
+            const el = document.getElementById(id); let start = 0; const startTime = performance.now();
+            function step(t) { const p = Math.min(1, (t - startTime) / duration); el.innerText = Math.floor(p * end); if (p < 1) requestAnimationFrame(step); }
+            requestAnimationFrame(step);
+        }
+        animateCounter('clients', 120); animateCounter('years', 6); animateCounter('certs', 5);
+
+        // small accessibility: keyboard download by pressing 'd'
+        window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'd') { document.getElementById('downloadBtn').click(); } });
+
+        // Hint: replace dummy image & text before sharing on GH
+
+    </script>
+</body>
+
+</html>

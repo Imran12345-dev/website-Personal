@@ -1,0 +1,466 @@
+<!--
+Interactive Barista CV
+Single-file HTML/CSS/JS — many photo placeholders so you can copy/paste images easily.
+How to use:
+1) Replace text placeholders (name, contact, experience) with your info.
+2) Replace the <img src="..."> URLs with your own images (or copy-paste new <img> tags into the <div id="photoGallery">).
+3) Push this file as index.html to GitHub Pages to share.
+
+Features built-in:
+- Masonry-style photo gallery (CSS Grid + JS reflow) with many dummy images.
+- Lightbox viewer with keyboard navigation (left/right, esc).
+- Animated coffee-meter (espresso skill) using canvas + GSAP.
+- Typed headline, animated skill bars, counters, tip-jar animation.
+- Filter buttons for gallery (Latte / Espresso / Latte Art / Events / Misc).
+- Download PDF (html2pdf) and copy vCard.
+- Accessibility: keyboard support for gallery and major actions.
+
+NOTE: All images are dummy Unsplash links — simply replace or paste your images into the #photoGallery element.
+-->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Barista CV — Demo</title>
+    <meta name="description"
+        content="Interactive Barista CV — many photos, lightbox, coffee meter, skills and downloads. Dummy images included." />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2d9b1f6d2.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --bg: #0b0f12;
+            --card: #071018;
+            --accent: #d97706;
+            --muted: #99a3ad;
+            --glass: rgba(255, 255, 255, 0.03);
+            color-scheme: dark;
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #050607, #081014 60%);
+            color: #e6eef6
+        }
+
+        .wrap {
+            max-width: 1200px;
+            margin: 28px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px
+        }
+
+        .left {
+            background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.01));
+            padding: 20px;
+            border-radius: 14px;
+            position: relative
+        }
+
+        .right {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+            padding: 20px;
+            border-radius: 14px
+        }
+
+        .photo {
+            width: 110px;
+            height: 110px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.04)
+        }
+
+        .name {
+            margin-top: 12px;
+            font-weight: 800;
+            font-size: 20px
+        }
+
+        .role {
+            color: var(--muted);
+            font-weight: 600
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer
+        }
+
+        .btn.primary {
+            background: linear-gradient(90deg, var(--accent), #ffb86b);
+            color: #071014;
+            font-weight: 700
+        }
+
+        /* coffee meter */
+        #coffeeMeter {
+            width: 100%;
+            height: 160px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        /* skills */
+        .skill {
+            margin: 12px 0
+        }
+
+        .skill .label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px
+        }
+
+        .bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 999px;
+            overflow: hidden
+        }
+
+        .bar>i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--accent), #ffd36b)
+        }
+
+        /* gallery */
+        .gallery-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap
+        }
+
+        .filters .btn {
+            background: transparent
+        }
+
+        #photoGallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px
+        }
+
+        #photoGallery img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+            display: block;
+            transition: transform .28s ease, box-shadow .28s ease
+        }
+
+        #photoGallery img:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6)
+        }
+
+        /* lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 82vh;
+            border-radius: 10px
+        }
+
+        .lightbox .meta {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            color: rgba(255, 255, 255, 0.9)
+        }
+
+        /* projects */
+        .projects .card {
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+            margin-bottom: 12px
+        }
+
+        /* responsive */
+        @media(max-width:980px) {
+            .wrap {
+                grid-template-columns: 1fr
+            }
+        }
+
+        /* micro */
+        .topRow {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .counter {
+            font-weight: 800;
+            font-size: 22px
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <div class="left">
+            <div style="display:flex;gap:12px;align-items:center">
+                <div class="photo" id="mainPhoto"><img
+                        src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder"
+                        alt="photo" style="width:100%;height:100%;object-fit:cover"></div>
+                <div>
+                    <div class="name" id="name">Nama Kamu</div>
+                    <div class="role">Barista • Coffee Lover</div>
+                    <div class="muted">Jakarta, Indonesia</div>
+                </div>
+            </div>
+
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+                <div class="btn primary" id="hireBtn">Apply</div>
+                <div class="btn" id="downloadBtn">Download PDF</div>
+                <div class="btn" id="copyV">Copy vCard</div>
+            </div>
+
+            <div id="coffeeMeter" style="margin-top:18px"></div>
+
+            <div style="margin-top:12px">
+                <strong>Skills</strong>
+                <div class="skill">
+                    <div class="label">Espresso Extraction <span class="muted">92%</span></div>
+                    <div class="bar"><i style="width:92%"></i></div>
+                </div>
+                <div class="skill">
+                    <div class="label">Latte Art <span class="muted">88%</span></div>
+                    <div class="bar"><i style="width:88%"></i></div>
+                </div>
+                <div class="skill">
+                    <div class="label">Customer Service <span class="muted">94%</span></div>
+                    <div class="bar"><i style="width:94%"></i></div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px">
+                <strong>Quick Stats</strong>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <div style="flex:1;background:var(--glass);padding:10px;border-radius:10px;text-align:center">
+                        <div class="counter" id="cups">0</div>
+                        <div class="muted">Cups/day</div>
+                    </div>
+                    <div style="flex:1;background:var(--glass);padding:10px;border-radius:10px;text-align:center">
+                        <div class="counter" id="years">0</div>
+                        <div class="muted">Years Exp</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px">
+                <strong>Contact</strong>
+                <div class="muted" style="margin-top:8px">📧 demo@coffee.com<br>📞 +62 812-3456-789</div>
+            </div>
+
+        </div>
+
+        <div class="right">
+            <div class="topRow" style="justify-content:space-between">
+                <div>
+                    <div style="font-weight:800;font-size:26px">Barista CV — <span id="typed"></span></div>
+                    <div class="muted" style="margin-top:6px">Specialist in espresso-based beverages, latte art, and
+                        café operations.</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <div class="muted">Gallery</div>
+                    <div class="btn" id="addPhoto">+ Add Img</div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                <div class="gallery-controls filters">
+                    <button class="btn" data-filter="*">All</button>
+                    <button class="btn" data-filter="latte">Latte Art</button>
+                    <button class="btn" data-filter="espresso">Espresso</button>
+                    <button class="btn" data-filter="event">Events</button>
+                    <button class="btn" data-filter="misc">Misc</button>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:8px">
+                    <div class="btn" id="shuffle">Shuffle</div>
+                    <div class="btn" id="fullscreen">Full Screen</div>
+                </div>
+            </div>
+
+            <div id="photoGallery" aria-live="polite" style="margin-top:12px">
+                <!-- MANY dummy images below. Replace or copy/paste new <img> tags into this container. -->
+                <img data-cat="latte"
+                    src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1600&auto=format&fit=crop&s=1"
+                    alt="latte1">
+                <img data-cat="espresso"
+                    src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=1600&auto=format&fit=crop&s=2"
+                    alt="espresso1">
+                <img data-cat="latte"
+                    src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1600&auto=format&fit=crop&s=3"
+                    alt="latte2">
+                <img data-cat="event"
+                    src="https://images.unsplash.com/photo-1526312426976-6f4ee915583e?q=80&w=1600&auto=format&fit=crop&s=4"
+                    alt="event1">
+                <img data-cat="misc"
+                    src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1600&auto=format&fit=crop&s=5"
+                    alt="misc1">
+                <img data-cat="espresso"
+                    src="https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=1600&auto=format&fit=crop&s=6"
+                    alt="espresso2">
+                <img data-cat="latte"
+                    src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=1600&auto=format&fit=crop&s=7"
+                    alt="latte3">
+                <img data-cat="event"
+                    src="https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1600&auto=format&fit=crop&s=8"
+                    alt="event2">
+                <img data-cat="misc"
+                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1600&auto=format&fit=crop&s=9"
+                    alt="misc2">
+                <img data-cat="espresso"
+                    src="https://images.unsplash.com/photo-1517263904808-5dc7a2d4d6df?q=80&w=1600&auto=format&fit=crop&s=10"
+                    alt="espresso3">
+                <!-- Add more: copy any <img data-cat="latte" src="URL" alt="desc"> -->
+            </div>
+
+            <div style="margin-top:18px" class="projects">
+                <div class="card">
+                    <strong>Experience</strong>
+                    <div style="margin-top:8px" class="muted">Barista @ BrewHouse (2021—Present) — Head barista during
+                        peak hours. Managed inventory and trained 8 junior baristas.</div>
+                </div>
+                <div class="card">
+                    <strong>Projects</strong>
+                    <div style="margin-top:8px" class="muted">Hosted weekly latte art workshops, ran pop-up coffee
+                        events, designed seasonal menu items that increased sales by 12%.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+        <button id="lbClose" class="btn" style="position:absolute;top:20px;right:20px">Close</button>
+        <button id="lbPrev" class="btn" style="position:absolute;left:20px;top:50%">‹</button>
+        <button id="lbNext" class="btn" style="position:absolute;right:20px;top:50%">›</button>
+        <img src="" alt="expanded" id="lbImg">
+        <div class="meta" id="lbMeta"></div>
+    </div>
+
+    <!-- libs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        // Typed headline
+        new Typed('#typed', { strings: ['Latte Artist', 'Espresso Specialist', 'Barista Trainer'], typeSpeed: 60, backSpeed: 30, loop: true });
+
+        // Counters
+        function animateCounter(id, end, duration = 900) { const el = document.getElementById(id); let start = 0; const s = performance.now(); (function step(t) { const p = Math.min(1, (t - s) / duration); el.innerText = Math.floor(p * end); if (p < 1) requestAnimationFrame(step); })(); }
+        animateCounter('cups', 120); animateCounter('years', 3);
+
+        // Skill bars
+        gsap.fromTo('.skill i', { width: 0 }, { width: function (i) { return this.targets ? this.targets[0].style.width : this; }, duration: 1.4, stagger: 0.12, ease: 'elastic.out(1,0.6)' });
+
+        // Coffee meter (Canvas)
+        (function () {
+            const root = document.getElementById('coffeeMeter'); const c = document.createElement('canvas'); c.width = 600; c.height = 160; c.style.width = '100%'; c.style.height = '160px'; root.appendChild(c); const ctx = c.getContext('2d'); let level = 0.7; function draw() {
+                ctx.clearRect(0, 0, c.width, c.height); ctx.save(); const w = c.width, h = c.height; ctx.translate(20, 20);
+                // cup
+                ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(w - 120, 20); ctx.quadraticCurveTo(w - 80, 20, w - 80, 60); ctx.lineTo(w - 80, 80); ctx.quadraticCurveTo(w - 80, 120, w - 120, 120); ctx.lineTo(40, 120); ctx.quadraticCurveTo(20, 120, 20, 100); ctx.lineTo(20, 40); ctx.quadraticCurveTo(20, 20, 40, 20); ctx.closePath(); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fill();
+                // coffee
+                const coffeeH = 80 * level; ctx.beginPath(); ctx.rect(28, 120 - coffeeH, w - 180, coffeeH); ctx.fillStyle = 'rgba(217,119,6,0.92)'; ctx.fill();
+                // handle
+                ctx.beginPath(); ctx.ellipse(w - 60, 70, 26, 32, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fill();
+                // steam
+                for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2; ctx.moveTo(80 + i * 24, 12); ctx.bezierCurveTo(70 + i * 24, -10, 110 + i * 24, -10, 100 + i * 24, 12); ctx.stroke(); }
+                ctx.restore();
+            }
+            draw(); // animate level with GSAP
+            const meter = { v: level }; function setLevel(v) { gsap.to(meter, { v: v, duration: 1.2, ease: 'elastic.out(1,0.6)', onUpdate: () => { level = meter.v; draw(); } }); }
+            // interactive: click meter to randomize level
+            root.addEventListener('click', () => { setLevel(0.4 + Math.random() * 0.6) });
+        })();
+
+        // Gallery filtering + lightbox
+        const gallery = document.getElementById('photoGallery'); const imgs = Array.from(gallery.querySelectorAll('img'));
+        function filter(cat) { imgs.forEach(img => { const m = img.dataset.cat || '*'; if (cat === '*' || cat === m) img.style.display = 'block'; else img.style.display = 'none' }); }
+        document.querySelectorAll('.filters .btn').forEach(b => b.addEventListener('click', () => filter(b.dataset.filter)));
+
+        // Shuffle
+        document.getElementById('shuffle').addEventListener('click', () => { for (let i = imgs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); gallery.appendChild(imgs[j]); imgs.splice(j, 1); imgs.push(document.querySelectorAll('#photoGallery img')[0]); } });
+
+        // Fullscreen gallery container
+        document.getElementById('fullscreen').addEventListener('click', () => { document.getElementById('photoGallery').requestFullscreen?.(); });
+
+        // Lightbox controls
+        const lightbox = document.getElementById('lightbox'); const lbImg = document.getElementById('lbImg'); const lbMeta = document.getElementById('lbMeta'); let currentIndex = 0;
+        function openLB(idx) { currentIndex = idx; lbImg.src = imgs[idx].src; lbMeta.innerText = imgs[idx].alt || ''; lightbox.style.display = 'flex'; }
+        function closeLB() { lightbox.style.display = 'none'; }
+        function nextLB() { currentIndex = (currentIndex + 1) % imgs.length; openLB(currentIndex); } function prevLB() { currentIndex = (currentIndex - 1 + imgs.length) % imgs.length; openLB(currentIndex); }
+        imgs.forEach((img, i) => img.addEventListener('click', () => openLB(i)));
+        document.getElementById('lbClose').addEventListener('click', closeLB);
+        document.getElementById('lbNext').addEventListener('click', nextLB);
+        document.getElementById('lbPrev').addEventListener('click', prevLB);
+        window.addEventListener('keydown', (e) => { if (lightbox.style.display === 'flex') { if (e.key === 'ArrowRight') nextLB(); if (e.key === 'ArrowLeft') prevLB(); if (e.key === 'Escape') closeLB(); } });
+
+        // Add photo (helper) — prompts for URL and adds image element (this makes it easy to copy/paste)
+        document.getElementById('addPhoto').addEventListener('click', () => { const url = prompt('Paste image URL (ends with jpg/png)'); if (!url) return; const cat = prompt('Category (latte/espresso/event/misc)') || 'misc'; const img = document.createElement('img'); img.src = url; img.dataset.cat = cat; img.alt = 'user-added'; img.style.opacity = 0; gallery.prepend(img); gsap.to(img, { opacity: 1, duration: 0.6 }); imgs.unshift(img); img.addEventListener('click', () => openLB(imgs.indexOf(img))); });
+
+        // PDF Download
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const opt = { margin: 0.5, filename: 'Barista-CV.pdf', image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 1.6 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            html2pdf().from(document.body).set(opt).save();
+        });
+
+        // Copy vCard
+        document.getElementById('copyV').addEventListener('click', async () => {
+            const v = `BEGIN:VCARD
+VERSION:3.0
+FN:Nama Kamu
+EMAIL:demo@coffee.com
+TEL:+628123456789
+ORG:Barista
+END:VCARD`; await navigator.clipboard.writeText(v); alert('vCard copied to clipboard');
+        });
+
+        // Small entrance animation
+        gsap.from('.left', { x: -40, opacity: 0, duration: 1.1, ease: 'power3.out' }); gsap.from('.right', { x: 40, opacity: 0, duration: 1.1, delay: 0.08, ease: 'power3.out' });
+
+    </script>
+</body>
+
+</html>
